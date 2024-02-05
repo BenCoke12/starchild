@@ -1,0 +1,306 @@
+(* module LA = struct
+    let matrix_mult x y = 
+    (* Check failure modes m x n matrices *)
+end *)
+
+(*Map and Map2 without result types*)
+let rec easymap op = function
+    | [] -> []
+    | h :: t -> op h :: easymap op t
+
+let rec easymap2 op a b =
+    match a, b with
+        | [], _ -> b
+        | _, [] -> a
+        | h :: t, h' :: t' -> (op h h') :: (easymap2 op t t')
+
+(*Vector sum*)
+(* let vector_sum x y = 
+    List.map2 ( +. ) x y *)
+
+(* Vector sum with easymap2 *)
+let vector_sum x y =
+    easymap2 ( +. ) x y
+
+let add_bias x y =
+    match x with
+        | None -> None
+        | Some c -> Some (easymap2 ( +. ) c y)
+
+(*matrix multiplication - Transpose then product*)
+
+
+(*Try just considering matrix x vector case for simpler implementation*)
+(*Matrix by vector is dot product each of the matrix rows with the vector to get a new vector*)
+(* type 'a vector = 'a list;; *)
+(* 
+let dot_product (vector1 : vector) (vector2 : vector) = 
+    List.map ( +. ) (List.map2 ( *. ) vector1 vector2 ) *)
+
+let rec sum = function
+    | [] -> 0.
+    | h :: t -> h +. sum t
+
+let dot_prod vector1 vector2 = 
+    sum (easymap2 ( *. ) vector1 vector2)
+
+let rec weights_inputs_mult matrix vector = 
+    match matrix, vector with
+        | None, _  -> []
+        | _, None -> []
+        | _, Some [] -> []
+        | Some [], _ -> []
+        | Some (h :: t), Some v -> (dot_prod h v) :: (weights_inputs_mult (Some t) (Some v))
+
+
+(* get nth element of a list *)
+(* compare element n *)
+let extract x = match x with
+    | Some c -> c
+    | None -> 0.
+
+(*one comparison for each of <, >, = *)
+(*takes list options *)
+let gt_in_n n v1 v2 = 
+    match v1, v2 with
+    | _, None -> false
+    | None, _ -> false
+    | Some v1', Some v2' -> 
+        let v1'' = List.nth n v1' in
+        let v2'' = List.nth n v2' in
+        match v1'', v2'' with
+        | _, None -> false
+        | None, _ -> false
+        | Some a, Some b -> a >. b
+
+let gte_in_n n v1 v2 = 
+match v1, v2 with
+| _, None -> false
+| None, _ -> false
+| Some v1', Some v2' -> 
+    let v1'' = List.nth n v1' in
+    let v2'' = List.nth n v2' in
+    match v1'', v2'' with
+    | _, None -> false
+    | None, _ -> false
+    | Some a, Some b -> a >=. b
+
+let lte_in_n n v1 v2 = 
+match v1, v2 with
+| _, None -> false
+| None, _ -> false
+| Some v1', Some v2' -> 
+    let v1'' = List.nth n v1' in
+    let v2'' = List.nth n v2' in
+    match v1'', v2'' with
+    | _, None -> false
+    | None, _ -> false
+    | Some a, Some b -> a <=. b
+
+
+let lt_in_n n v1 v2 = 
+    let v1' = List.nth n v1 in
+    let v2' = List.nth n v2 in 
+    match v1', v2' with
+    | _, None -> false
+    | None, _ -> false
+    | Some a, Some b -> a < b
+
+let eq_in_n n v1 v2 = 
+    let v1' = List.nth n v1 in
+    let v2' = List.nth n v2 in
+    match v1', v2' with
+        | _, None -> false
+        | None, _ -> false
+        | Some a, Some b -> a = b
+
+let rec lookup k = function
+| [] -> None
+| (k', v) :: t -> if k = k' then Some v else lookup k t
+
+
+(* Network for drainage-imbibition result on sample = 0.77613704713*)
+(* let weights = [(0, [[-0.45434225;  0.9829676; 0.9517746];
+                    [-1.0538367; 0.87074697; -0.4161881];
+                    [0.78869414; -0.22294755; -0.15477714]]);
+                (1, [[0.11516574; 0.36579233; 0.31755835]])]
+let bias = [(0, [-0.09494098; 0.01404911; 0.01670141]);(1, [0.01644361])]
+let activations = [(0, "relu");(1, "linear")]
+let layers = [0;1]
+let sample = Some [2.; 3.; 4.]
+let sample2 = Some [0.1; 0.3; 0.6]
+let sample3 = Some [0.2;0.1;0.3] *)
+
+(* Transpose net 01 - result on sample = 1.3867308615161091
+success, huzzah *)
+let weights = [(0, [[-0.45434225;  -1.0538367; 0.78869414];
+                    [0.9829676; 0.87074697; -0.22294755];
+                    [0.9517746; -0.4161881; -0.15477714]]);
+                (1, [[0.11516574; 0.36579233; 0.31755835]])]
+let bias = [(0, [-0.09494098; 0.01404911; 0.01670141]);(1, [0.01644361])]
+let activations = [(0, "relu");(1, "linear")]
+let layers = [0;1]
+let sample = Some [2.; 3.; 4.]
+let sample2 = Some [0.1; 0.3; 0.6]
+let sample3 = Some [0.2;0.1;0.3]
+
+(*from web app result on sample = 0.7761370487*)
+(* let weights = [(0, [[-0.454342246055603;  0.9829676151275635; 0.9517745971679688];
+                    [-1.053836703300476; 0.8707469701766968; -0.4161880910396576];
+                    [0.7886941432952881; -0.22294755280017853; -0.1547771394252777]]);
+                (1, [[0.11516574025154114; 0.36579233407974243; 0.3175583481788635]])]
+let bias = [(0, [-0.09494097530841827; 0.01404910534620285; 0.016701405867934227]);(1, [0.016443606466054916])]
+let activations = [(0, "relu");(1, "linear")]
+let layers = [0;1]
+let sample = Some [2.; 3.; 4.] *)
+
+
+module Activations = struct
+    let relu x = if x >. 0.
+                then x
+                else 0.
+    let linear x = x
+end
+
+let apply_layer layer input =
+    let kernel = (add_bias (lookup layer bias) (weights_inputs_mult(lookup layer weights) input)) in
+    if (lookup layer activations) = Some "relu" then
+        match kernel with
+            | None -> None
+            | Some c -> Some (List.map Activations.relu c)
+    else
+        match kernel with
+            | None -> None
+            | Some c -> Some (List.map Activations.linear c)
+
+(*iterate through layers list - otherwise can't prove termination?*)
+let rec apply_network layers input = 
+    match layers with
+        | [] -> input
+        | h :: t -> apply_layer h input |> apply_network t
+(* 
+let rec apply_network input layer_counter = 
+    if layer_counter = 0
+        then apply_layer 0 input
+    else 
+        apply_layer layer_counter (apply_network input (layer_counter - 1))*)
+
+(*expects Some [x.; y.]*)
+let model = apply_network layers 
+
+let result = model sample
+
+(* let model input = apply_layer 0 input |> apply_layer 1 *)
+
+(* let monotonicity x y = 
+    y >=. x
+    ==>
+    gte_in_n 0 (model (Some [y])) (model (Some [x])) 
+
+verify monotonicity [@@auto];; *)
+
+(* let monotonicity x y b c =
+    y >=. x (* might be worth putting bounds here *)
+    ==> 
+    gte_in_n 0 (model (Some [b;c;y])) (model (Some [b;c;x]))
+
+verify monotonicity [@@auto];; *)
+let valid x = x <=. 1. && x >=. 0.
+(*stays within constraints:
+    output of the network(relative permeability) should always be between 0 and 1 if the inputs are between
+    0 and 1. *)
+(* let within_bounds sn snm1 knm1 = 
+    (valid sn) && (valid snm1) && (valid knm1)
+    ==>
+    gte_in_n 0 (model (Some [snm1; knm1; sn])) (Some [0.])
+    &&
+    lte_in_n 0 (model (Some [snm1; knm1; sn])) (Some [1.])
+
+verify within_bounds [@@auto] *)
+(* monotonicity on next input/output combination *)
+(* i.e. we take steps where the result of the previous evaluation is used for the current evaluation*)
+(*!!! only valid for the case where the result is a list of length 1 !!!*)
+
+let local_monotonicity sn snm1 snm2 knm1 knm2 = 
+    let knm1 = 
+    match (model (Some [snm2; knm2; snm1])) with
+    | None -> 0.
+    | Some [] -> 0.
+    | Some (h :: t) -> h in
+
+    (sn >. snm1) && (snm1 >. snm2) && (valid sn) && (valid snm1) && (valid snm2) && (valid knm2) (* other constraints here *) (* && (sn >=. 0.) && (sn =<. 1.) *)
+    ==>
+    gte_in_n 0 (model (Some [snm1; knm1; sn])) (model (Some [snm2; knm2; snm1]))
+
+verify local_monotonicity [@@auto] (* ran on Transpose net 01 - result:
+Conjecture refuted
+    This refutation is specifically for Subgoal 1.4764
+    CX.sn = 
+    48360207781940232836009832586217231550164696229080381/126607580162744989167654966344182379367062008528652544
+        : 0.38196929220017193689
+    CX.snm1 = 
+    728976742700363793513441629768479653358014470678329/10550631680228749097304580528681864947255167377387712
+        : 0.06909318463523112863
+    CX.snm2 = 
+    872190145689785591517321523852184075967062592886513/13188289600285936371630725660852331184068959221734640
+        : 0.06613368163153435503
+    CX.knm2 = -735399060310629411647576745082612214950340861783853/10550631680228749097304580528681864947255167377387712
+        : -0.06970189867292241266
+
+    model (Some [CX.snm2; CX.knm2; CX.snm1]) = 
+    2066880747466745677220406290001251501196827978834725/42202526720914996389218322114727459789020669509550848
+        : 0.04897528437420377916
+
+    model (Some [CX.snm1; knm1; CX.sn]) = accidentally closed the window here :(
+        - rerun the verification
+        -consider the bounds - can knm2 be negative?
+
+    ATTEMPT 2:
+
+
+    Note: This refutation is specifically for Subgoal 1.4764'''.
+
+ ⓘ  Rules:
+    (:def List.map)
+    (:def List.nth)
+    (:def apply_network)
+    (:def easymap2)
+    (:def lookup)
+    (:def sum)
+    (:def weights_inputs_mult)
+
+[✗] Conjecture refuted.
+module CX :
+  sig val knm2 : real val sn : real val snm1 : real val snm2 : real end
+
+      let knm1 = 
+    match (model (Some [CX.snm2; CX.knm2; CX.snm1])) with
+    | None -> 0.
+    | Some [] -> 0.
+    | Some (h :: t) -> h in
+    (model (Some [CX.snm1; knm1; CX.sn]))
+
+    kn = 9709911214363021980110343236271609654296851966791253/211012633604574981946091610573637298945103347547754240
+        = 0.04601578137050700556
+
+    model (Some [CX.snm2; CX.knm2; CX.snm1])
+    knm1 = 2066880747466745677220406290001251501196827978834725/42202526720914996389218322114727459789020669509550848
+        = 0.04897528437420377916
+
+    CX.knm2 = -735399060310629411647576745082612214950340861783853/10550631680228749097304580528681864947255167377387712
+        = -0.06970189867292241266
+    CX.sn = 48360207781940232836009832586217231550164696229080381/126607580162744989167654966344182379367062008528652544
+        = 0.38196929220017193689
+    CX.snm1 = 728976742700363793513441629768479653358014470678329/10550631680228749097304580528681864947255167377387712
+        = 0.06909318463523112863
+    CX.snm2 = 872190145689785591517321523852184075967062592886513/13188289600285936371630725660852331184068959221734640
+        = 0.06613368163153435503
+*)
+
+(* let monotonicity x y a b = 
+    y >=. x
+    ==> gte_in_n 0 (model (Some [y;a;b])) (model (Some [x;a;b]))
+
+verify monotonicity [@@auto];; *)
+
+(* let lipschitz_continuity x y =  *)

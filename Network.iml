@@ -1,0 +1,32 @@
+module Activations = struct
+    let relu x = if x >. 0.
+                then x
+                else 0.
+    let linear x = x
+end
+
+module Basicnet = struct
+    (*try using records*)
+    module Layer0 = struct
+    let counter = 1
+    let weights = [[1.;2.];[2.;4.];[3.;5.]]
+    let bias = []
+    let activation = Activations.relu
+    end
+
+    module Layer1 = struct
+    let counter = 0
+    let weights = []
+    let bias = []
+    let activation = Activations.linear
+    end
+end
+
+let apply_layer layer input = 0.
+
+let rec apply_network network counter input = 
+    if counter = 0
+    then apply_layer network.layer input
+    else apply_layer apply_network network (counter - 1) input
+
+apply_network basicnet 2 [0.5; 0.5]
